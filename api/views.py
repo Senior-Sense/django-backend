@@ -20,16 +20,39 @@ class RegisterUserView(generics.CreateAPIView) :
         return Response({"Success" : "Now you can login"})
 
 
-@api_view(['GET'])
-@authentication_classes([JWTAuthentication])
-def user_info(request) :
-    user = request.user
-    return Response({
-        'username' : user.username,
-        'email' : user.email,
-        'first_name' : user.first_name,
-        'last_name' : user.last_name
-    })
+# @api_view(['GET'])
+# @authentication_classes([JWTAuthentication])
+# def user_info(request) :
+#     user = request.user
+#     return Response({
+#         'username' : user.username,
+#         'email' : user.email,
+#         'first_name' : user.first_name,
+#         'last_name' : user.last_name
+#     })
+
+class UserInformationView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        # update user information
+        user = request.user
+        user.first_name = request.data.get('first_name', user.first_name)
+        user.last_name = request.data.get('last_name', user.last_name)
+        user.email = request.data.get('email', user.email)
+        user.save()
+        return Response({"detail": "User information has been successfully updated."}, status=status.HTTP_200_OK)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        return Response({
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        })
+
+
 
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
